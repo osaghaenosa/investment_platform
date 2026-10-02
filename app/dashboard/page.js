@@ -72,7 +72,7 @@ export default function Dashboard() {
             {err && <p className="err" role="alert">{err}</p>}
             <div className="row">
               <button className="ghost" onClick={() => setOpen(false)}>Cancel</button>
-              <button className="btn" disabled={!agreed || busy} onClick={pay}>{busy ? 'Redirecting…' : 'Pay with Flutterwave'}</button>
+              <button className="btn" disabled={!agreed || busy} onClick={pay}>{busy ? 'Redirecting…' : 'Pay with Paystack'}</button>
             </div>
           </div>
         </div>

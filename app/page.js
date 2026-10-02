@@ -21,7 +21,7 @@ export default function Home() {
         <h1>Put your capital to work, at your own pace.</h1>
         <p>Tell us how much you plan to invest. Pay it all at once or in instalments, and watch your commitment fill up as each payment lands.</p>
         <div className="gauge" aria-hidden="true"><i /></div>
-        <small>Payments are processed by Flutterwave. Every payment is confirmed by email.</small>
+        <small>Payments are processed by Paystack. Every payment is confirmed by email.</small>
       </section>
       <section className="panel">
         <form onSubmit={submit} className="card">
