@@ -1,11 +1,44 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BRAND, TERMS, money } from '@/lib/config';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export default function Dashboard() {
   const [d, setD] = useState(null); const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(''); const [agreed, setAgreed] = useState(false);
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [note, setNote] = useState('');
+  const [receipt, setReceipt] = useState(null);
+  const receiptRef = useRef(null);
+
+  const downloadPdf = async () => {
+    if (!receiptRef.current) return;
+    const canvas = await html2canvas(receiptRef.current, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width / 2, canvas.height / 2] });
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+    pdf.save(`Receipt_${receipt.tx_ref}.pdf`);
+  };
+
+  const shareReceipt = async () => {
+    if (!receiptRef.current) return;
+    const canvas = await html2canvas(receiptRef.current, { scale: 2 });
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const file = new File([blob], `Receipt_${receipt.tx_ref}.png`, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ title: 'Investment Receipt', text: `Receipt for ${money(receipt.amount, receipt.currency)}`, files: [file] });
+        } catch (e) { console.error('Share failed:', e); }
+      } else if (navigator.share) {
+        try {
+          await navigator.share({ title: 'Investment Receipt', text: `Receipt for ${money(receipt.amount, receipt.currency)}. Reference: ${receipt.tx_ref}` });
+        } catch (e) { console.error('Share failed:', e); }
+      } else {
+        alert("Sharing is not supported on this device.");
+      }
+    });
+  };
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get('payment');
@@ -55,7 +88,7 @@ export default function Dashboard() {
         <div className="scroll"><table>
           <thead><tr><th>Date</th><th>Reference</th><th>Amount</th><th>Status</th></tr></thead>
           <tbody>{d.payments.map((p) => (
-            <tr key={p.tx_ref}><td>{new Date(p.createdAt).toLocaleDateString('en-GB')}</td><td>{p.tx_ref.slice(0, 12)}…</td>
+            <tr key={p.tx_ref} onClick={() => setReceipt(p)} className="clickable"><td>{new Date(p.createdAt).toLocaleDateString('en-GB')}</td><td>{p.tx_ref.slice(0, 12)}…</td>
               <td>{money(p.amount, p.currency)}</td><td><span className={`tag ${p.status}`}>{p.status}</span></td></tr>))}
           </tbody></table></div>
       )}
@@ -73,6 +106,69 @@ export default function Dashboard() {
             <div className="row">
               <button className="ghost" onClick={() => setOpen(false)}>Cancel</button>
               <button className="btn" disabled={!agreed || busy} onClick={pay}>{busy ? 'Redirecting…' : 'Pay with Paystack'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {receipt && (
+        <div className="overlay" onClick={() => setReceipt(null)}>
+          <div className="modal" style={{ padding: '0', background: '#f3f4f6' }} onClick={(e) => e.stopPropagation()}>
+            <div ref={receiptRef} style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ backgroundColor: '#0b3b34', padding: '30px', textAlign: 'center', color: '#ffffff' }}>
+                <h1 style={{ margin: 0, fontSize: '24px' }}>Payment Receipt</h1>
+              </div>
+              
+              <div className={`stamp stamp-${receipt.status}`}>
+                {receipt.status}
+              </div>
+
+              <div style={{ padding: '40px 30px' }}>
+                <p style={{ marginTop: 0 }}>Hi <strong>{d.investor.name}</strong>,</p>
+                <p>Thank you for your payment. We have successfully recorded your transaction.</p>
+                
+                <div style={{ margin: '30px 0', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', padding: '20px 0' }}>
+                  <h2 style={{ fontSize: '14px', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '1px', marginTop: 0, marginBottom: '15px' }}>Transaction Details</h2>
+                  
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '8px 0', color: '#6b7280', fontSize: '15px' }}>Amount Paid</td>
+                        <td style={{ padding: '8px 0', color: '#111827', fontSize: '15px', textAlign: 'right', fontWeight: 'bold' }}>{money(receipt.amount, receipt.currency)}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '8px 0', color: '#6b7280', fontSize: '15px' }}>Reference Number</td>
+                        <td style={{ padding: '8px 0', color: '#111827', fontSize: '15px', textAlign: 'right' }}>{receipt.tx_ref}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '8px 0', color: '#6b7280', fontSize: '15px' }}>Date</td>
+                        <td style={{ padding: '8px 0', color: '#111827', fontSize: '15px', textAlign: 'right' }}>{new Date(receipt.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={{ backgroundColor: '#f9fafb', borderRadius: '6px', padding: '20px', marginBottom: '30px' }}>
+                  <h3 style={{ fontSize: '14px', color: '#374151', marginTop: 0, marginBottom: '10px' }}>Investment Summary</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '5px 0', color: '#6b7280', fontSize: '14px' }}>Total Goal</td>
+                        <td style={{ padding: '5px 0', color: '#111827', fontSize: '14px', textAlign: 'right' }}>{money(d.total, d.currency)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div style={{ textAlign: 'center', paddingTop: '20px', borderTop: '1px solid #e5e7eb' }}>
+                  <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>&copy; {new Date().getFullYear()} {BRAND}. All rights reserved.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="row" style={{ padding: '20px', borderTop: '1px solid #e5e7eb', background: '#fff' }}>
+              <button className="ghost" onClick={() => setReceipt(null)}>Close</button>
+              <button className="ghost" onClick={shareReceipt}>Share</button>
+              <button className="btn" onClick={downloadPdf}>Download PDF</button>
             </div>
           </div>
         </div>

@@ -8,6 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "mongoose": "^9.10.3",
     "next": "^15.0.0",
     "react": "^19.0.0",
