@@ -17,7 +17,10 @@ export default function Home() {
   return (
     <main className="split">
       <section className="hero">
-        <div className="brand">{BRAND}</div>
+        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="https://www.zacnosinventory.com/icon-72.png" alt="Zacnos Capital" width="32" height="32" style={{ borderRadius: '4px' }}/>
+          {BRAND}
+        </div>
         <h1>Put your capital to work, at your own pace.</h1>
         <p>Tell us how much you plan to invest. Pay it all at once or in instalments, and watch your commitment fill up as each payment lands.</p>
         <div className="gauge" aria-hidden="true"><i /></div>

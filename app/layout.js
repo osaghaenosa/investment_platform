@@ -3,7 +3,7 @@ import './globals.css';
 const display = Fraunces({ subsets: ['latin'], variable: '--display', axes: ['opsz'] });
 const body = DM_Sans({ subsets: ['latin'], variable: '--body' });
 
-export const metadata = { title: 'Aurum Capital | Investor portal', description: 'Commit, track and pay your investment securely.' };
+export const metadata = { title: 'Zacnos Capital | Investor portal', description: 'Commit, track and pay your investment securely.' };
 export default function RootLayout({ children }) {
   return (<html lang="en"><body className={`${display.variable} ${body.variable}`}>{children}</body></html>);
 }

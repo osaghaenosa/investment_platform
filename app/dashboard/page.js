@@ -64,7 +64,13 @@ export default function Dashboard() {
 
   return (
     <main className="dash">
-      <header><div className="brand dark">{BRAND}</div><span>{d.investor.name}</span></header>
+      <header>
+        <div className="brand dark" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="https://www.zacnosinventory.com/icon-72.png" alt="Zacnos Capital" width="24" height="24" style={{ borderRadius: '4px' }}/>
+          {BRAND}
+        </div>
+        <span>{d.investor.name}</span>
+      </header>
       {notes[note] && <p className={`banner ${notes[note][0]}`} role="status">{notes[note][1]}</p>}
 
       <section className="summary">
@@ -114,7 +120,7 @@ export default function Dashboard() {
         <div className="overlay" onClick={() => setReceipt(null)}>
           <div className="modal" style={{ padding: '0', background: '#f3f4f6' }} onClick={(e) => e.stopPropagation()}>
             <div ref={receiptRef} style={{ background: '#ffffff', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ backgroundColor: '#0b3b34', padding: '30px', textAlign: 'center', color: '#ffffff' }}>
+              <div style={{ backgroundColor: '#1e3a8a', padding: '30px', textAlign: 'center', color: '#ffffff' }}>
                 <h1 style={{ margin: 0, fontSize: '24px' }}>Payment Receipt</h1>
               </div>
               
